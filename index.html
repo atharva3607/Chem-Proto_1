@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive 3D Slime Preparation Laboratory</title>
+  
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Master Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       PRELOADER LOADING SCREEN
+       ========================================================================== -->
+  <div id="preloader">
+    <div class="preloader-box">
+      <div style="font-size: 2.5rem; color: var(--cyan-bright); margin-bottom: 1rem;">
+        <i class="fa-solid fa-cube fa-spin"></i>
+      </div>
+      <h2 class="preloader-title">3D SLIME LAB</h2>
+      <p class="preloader-status" id="preloader-status-text">Loading CAD-Quality Virtual Laboratory Simulation...</p>
+      
+      <div class="preloader-track">
+        <div class="preloader-fill" id="preloader-progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       INTRO SCREEN OVERLAY
+       ========================================================================== -->
+  <div id="intro-screen">
+    <div class="intro-content">
+      <div class="intro-badge">
+        <i class="fa-solid fa-cubes-stacked"></i> CAD & Virtual Laboratory Simulation
+      </div>
+      <h1 class="intro-title">Interactive 3D Slime Preparation Laboratory</h1>
+      <p class="intro-subtitle">College Chemistry Project — CAD-Quality 3D Model & Viscoelastic Slime Simulation</p>
+      
+      <button id="btn-start-exp" class="btn-primary">
+        <i class="fa-solid fa-play"></i> Start Experiment
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       THREE.JS 3D CANVAS VIEWPORT (85%+ SCREEN SPACE)
+       ========================================================================== -->
+  <div id="canvas-container"></div>
+
+  <!-- 3D Reagent Hover Tooltip -->
+  <div id="reagent-tooltip"></div>
+
+  <!-- CAD Exploded View Leader Line Callouts -->
+  <div class="exploded-labels" id="exploded-labels">
+    <div class="leader-label" id="label-stirrer" style="top: 25%; left: 62%;">Glass Stirring Rod</div>
+    <div class="leader-label" id="label-beaker" style="top: 42%; left: 65%;">Borosilicate Glass Beaker (250 mL)</div>
+    <div class="leader-label" id="label-slime" style="top: 62%; left: 62%;">Cross-Linked Slime Matrix</div>
+  </div>
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR & CAD INSPECTION CONTROLS
+       ========================================================================== -->
+  <header class="navbar">
+    <div class="brand" id="nav-brand">
+      <div class="brand-logo"><i class="fa-solid fa-cubes"></i></div>
+      <div class="brand-text">3D Slime <span>Lab</span></div>
+    </div>
+
+    <!-- CAD & Realistic Inspection Mode Controls -->
+    <div class="mode-switcher">
+      <button class="btn-mode active" id="btn-mode-real"><i class="fa-solid fa-flask"></i> REALISTIC VIEW</button>
+      <button class="btn-mode" id="btn-mode-cad"><i class="fa-solid fa-cube"></i> CAD VIEW</button>
+      <button class="btn-mode" id="btn-mode-wireframe"><i class="fa-solid fa-border-none"></i> WIREFRAME</button>
+      <button class="btn-mode" id="btn-mode-exploded"><i class="fa-solid fa-arrows-up-down"></i> EXPLODED</button>
+    </div>
+
+    <ul class="nav-links">
+      <li><a class="nav-link active" id="nav-exp">Experiment</a></li>
+      <li><a class="nav-link" id="nav-materials">Materials</a></li>
+      <li><a class="nav-link" id="nav-chemistry">Chemistry</a></li>
+      <li><a class="nav-link" id="nav-about">About</a></li>
+    </ul>
+
+    <div class="nav-controls">
+      <button class="btn-icon" id="btn-reset-exp" title="Reset Experiment">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      <button class="btn-icon" id="btn-reset-cam" title="Reset Camera View">
+        <i class="fa-solid fa-camera-rotate"></i>
+      </button>
+      <button class="btn-icon" id="btn-sound-toggle" title="Toggle Sound">
+        <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+      </button>
+      <button class="btn-icon" id="btn-fullscreen" title="Full Screen Presentation Mode">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MINIMAL FLOATING HUD OVERLAY (<15% SCREEN SPACE)
+       ========================================================================== -->
+  <aside class="step-info-panel" id="step-panel">
+    <div class="step-badge" id="step-badge">Step 1 of 7</div>
+    <h2 class="step-title" id="step-title">Step 1: Add Fevicol / PVA Glue</h2>
+    <p class="step-description" id="step-desc">
+      Fevicol bottle glides over the beaker and tilts, pouring thick white PVA glue into the glass vessel.
+    </p>
+    
+    <div class="step-chemistry-note" id="step-note">
+      <i class="fa-solid fa-lightbulb"></i> Fevicol contains polyvinyl alcohol (PVA) long-chain polymers, which act as the main liquid structural foundation for slime synthesis.
+    </div>
+
+    <div class="mini-chemistry-widget" id="mini-chem-widget">
+      <div class="mini-widget-title" style="font-size: 0.75rem; font-weight: 700; color: var(--cyan-bright);"><i class="fa-solid fa-diagram-project"></i> Polymer Cross-Linking</div>
+      <p style="font-size: 0.78rem; color: #cbd5e1; margin-top: 4px;">
+        Borate ions B(OH)₄⁻ bridge adjacent PVA chains into a 3D elastic matrix.
+      </p>
+    </div>
+  </aside>
+
+  <!-- ==========================================================================
+       INTERACTIVE STIRRING HUD (STEP 7)
+       ========================================================================== -->
+  <div id="stir-hud">
+    <div class="stir-title"><i class="fa-solid fa-vial-circle-check"></i> Stir Mixture</div>
+    <p class="stir-instructions">Click STIR to rotate the rod in an orbital path!</p>
+    
+    <button id="btn-stir" class="btn-stir">
+      <i class="fa-solid fa-arrows-rotate"></i> STIR
+    </button>
+    
+    <div class="stir-progress-outer">
+      <div class="stir-progress-inner" id="stir-progress-fill"></div>
+    </div>
+    <div class="stir-percentage" id="stir-percent-text">Mixing Progress: 0%</div>
+  </div>
+
+  <!-- ==========================================================================
+       FINAL SLIME HUD & TEST SLIME ACTION PANEL
+       ========================================================================== -->
+  <div id="final-hud">
+    <div class="step-badge" style="background: rgba(58, 134, 255, 0.2); border-color: var(--blue-bright); color: var(--blue-bright);"><i class="fa-solid fa-award"></i> Synthesis Complete</div>
+    <h3 class="final-title">Slime Formation Complete!</h3>
+    <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.4;">
+      The solution has cross-linked into glossy, elastic slime. Rotate camera 360° to inspect.
+    </p>
+    
+    <div class="final-actions">
+      <button id="btn-test-slime" class="btn-action-glow btn-test-slime">
+        <i class="fa-solid fa-hand-sparkles"></i> Test Slime Elasticity
+      </button>
+      <button id="btn-view-summary" class="btn-action-glow btn-summary">
+        <i class="fa-solid fa-file-invoice"></i> View Summary Report
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       BOTTOM STEP NAVIGATION CONTROLS
+       ========================================================================== -->
+  <footer class="bottom-controls-bar">
+    <div class="nav-btn-container">
+      <button id="btn-prev-step" class="btn-step btn-prev" disabled>
+        <i class="fa-solid fa-arrow-left"></i> ← PREVIOUS
+      </button>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-text" id="progress-indicator-text">Experiment Progress: Step 1 / 7</div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <div class="nav-btn-container">
+      <button id="btn-next-step" class="btn-step btn-next">
+        NEXT → <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       MATERIALS MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="materials-modal">
+    <div class="modal-card">
+      <button class="btn-close-modal" data-modal="materials-modal"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.8rem; color: #fff;"><i class="fa-solid fa-flask"></i> Reagents & Equipment</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Chemical ingredients and tools used in polymer slime synthesis. Click any card to focus camera in 3D.</p>
+      </div>
+
+      <div class="materials-grid">
+        <div class="material-card" data-reagent="fevicol">
+          <div style="font-size: 1.5rem; color: var(--cyan-bright); margin-bottom: 0.5rem;"><i class="fa-solid fa-bottle-water"></i></div>
+          <div style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: #fff;">Fevicol / PVA Glue</div>
+          <div style="font-size: 0.8rem; color: var(--cyan-bright); font-family: monospace;">Polyvinyl Alcohol</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">Base polymer material providing long-chain monomer molecules.</div>
+          <div style="margin-top: 0.6rem; font-size: 0.75rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px; display: inline-block;">Approx. 100 mL</div>
+        </div>
+
+        <div class="material-card" data-reagent="borax">
+          <div style="font-size: 1.5rem; color: var(--cyan-bright); margin-bottom: 0.5rem;"><i class="fa-solid fa-vial"></i></div>
+          <div style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: #fff;">Borax Solution</div>
+          <div style="font-size: 0.8rem; color: var(--cyan-bright); font-family: monospace;">Na₂B₄O₇·10H₂O</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">Cross-linking agent connecting PVA chains into an elastic gel.</div>
+          <div style="margin-top: 0.6rem; font-size: 0.75rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px; display: inline-block;">Approx. 15 mL (4% soln)</div>
+        </div>
+
+        <div class="material-card" data-reagent="bakingSoda">
+          <div style="font-size: 1.5rem; color: var(--cyan-bright); margin-bottom: 0.5rem;"><i class="fa-solid fa-box"></i></div>
+          <div style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: #fff;">Baking Soda</div>
+          <div style="font-size: 0.8rem; color: var(--cyan-bright); font-family: monospace;">NaHCO₃</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">pH buffer and consistency modifier for smooth polymer texture.</div>
+          <div style="margin-top: 0.6rem; font-size: 0.75rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px; display: inline-block;">Approx. 5 grams</div>
+        </div>
+
+        <div class="material-card" data-reagent="caco3">
+          <div style="font-size: 1.5rem; color: var(--cyan-bright); margin-bottom: 0.5rem;"><i class="fa-solid fa-jar"></i></div>
+          <div style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: #fff;">Calcium Carbonate</div>
+          <div style="font-size: 0.8rem; color: var(--cyan-bright); font-family: monospace;">CaCO₃</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">Mineral filler enhancing firmness and opacity of slime.</div>
+          <div style="margin-top: 0.6rem; font-size: 0.75rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px; display: inline-block;">Approx. 3 grams</div>
+        </div>
+
+        <div class="material-card" data-reagent="perfume">
+          <div style="font-size: 1.5rem; color: var(--cyan-bright); margin-bottom: 0.5rem;"><i class="fa-solid fa-spray-can"></i></div>
+          <div style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: #fff;">Perfume / Fragrance</div>
+          <div style="font-size: 0.8rem; color: var(--cyan-bright); font-family: monospace;">Essential Oils</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">Adds pleasant fragrance to synthetic polymer mixture.</div>
+          <div style="margin-top: 0.6rem; font-size: 0.75rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px; display: inline-block;">Approx. 2-3 drops</div>
+        </div>
+
+        <div class="material-card" data-reagent="colour">
+          <div style="font-size: 1.5rem; color: var(--cyan-bright); margin-bottom: 0.5rem;"><i class="fa-solid fa-droplet"></i></div>
+          <div style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: #fff;">Food Colouring</div>
+          <div style="font-size: 0.8rem; color: var(--cyan-bright); font-family: monospace;">Organic Dye</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.4rem;">Provides brilliant lab demonstration color pigment.</div>
+          <div style="margin-top: 0.6rem; font-size: 0.75rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px; display: inline-block;">Approx. 3-4 drops</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       CHEMISTRY EXPLANATION MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="chemistry-modal">
+    <div class="modal-card">
+      <button class="btn-close-modal" data-modal="chemistry-modal"><i class="fa-solid fa-xmark"></i></button>
+
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.8rem; color: #fff;"><i class="fa-solid fa-dna"></i> Slime Polymer Chemistry</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Scientific mechanism behind PVA polymer chain cross-linking by Borate ions.</p>
+      </div>
+
+      <div class="chemistry-diagram-container">
+        <canvas id="crosslink-canvas"></canvas>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 1.5rem;">
+        <button id="btn-chem-before" class="btn-step btn-prev" style="padding: 8px 20px; font-size: 0.85rem;">Before Borax (Liquid)</button>
+        <button id="btn-chem-after" class="btn-step btn-next" style="padding: 8px 20px; font-size: 0.85rem;">After Borax (Cross-linked Slime)</button>
+      </div>
+
+      <div class="step-chemistry-note">
+        <h4 style="color: var(--cyan-bright); margin-bottom: 6px;">Polymer Cross-Linking Mechanism:</h4>
+        <p style="line-height: 1.6; color: #cbd5e1; font-size: 0.88rem;">
+          PVA (Polyvinyl Alcohol) consists of long linear chains containing hydroxyl (-OH) functional groups. In liquid state, these polymer chains slide past one another easily. When Borax is added to water, it dissociates into <strong>Borate ions [B(OH)₄]⁻</strong>. These borate ions form hydrogen and ionic bonds connecting adjacent PVA chains together. This 3D cross-linked network traps water molecules and restricts free molecular sliding, transforming the liquid solution into an elastic, viscoelastic gel (slime).
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EXPERIMENT SUMMARY MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="summary-modal">
+    <div class="modal-card">
+      <button class="btn-close-modal" data-modal="summary-modal"><i class="fa-solid fa-xmark"></i></button>
+
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.8rem; color: #fff;"><i class="fa-solid fa-clipboard-check"></i> Experiment Completed Successfully</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">College Chemistry Project Summary & Polymer Formation Analysis</p>
+      </div>
+
+      <div style="background: rgba(0, 242, 254, 0.05); border: 1px solid var(--border-glass); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+        <h3 style="color: var(--cyan-bright); margin-bottom: 1rem;">Materials Used:</h3>
+        <ul style="list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 0.9rem; color: #e2e8f0;">
+          <li><i class="fa-solid fa-check" style="color: var(--cyan-bright);"></i> Fevicol / PVA Glue</li>
+          <li><i class="fa-solid fa-check" style="color: var(--cyan-bright);"></i> Borax Solution</li>
+          <li><i class="fa-solid fa-check" style="color: var(--cyan-bright);"></i> Baking Soda (NaHCO₃)</li>
+          <li><i class="fa-solid fa-check" style="color: var(--cyan-bright);"></i> Calcium Carbonate (CaCO₃)</li>
+          <li><i class="fa-solid fa-check" style="color: var(--cyan-bright);"></i> Perfume / Fragrance</li>
+          <li><i class="fa-solid fa-check" style="color: var(--cyan-bright);"></i> Food Colouring Agent</li>
+        </ul>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-glass); border-radius: 16px; padding: 1.5rem;">
+        <h3 style="color: #fff; margin-bottom: 0.75rem;">Chemical Principle:</h3>
+        <p style="font-size: 0.92rem; line-height: 1.65; color: #cbd5e1;">
+          Slime forms mainly because borax creates cross-links between polymer chains present in the PVA-based glue. These cross-links reduce the free movement of polymer molecules, producing a flexible and elastic gel-like material.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       ABOUT MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="about-modal">
+    <div class="modal-card" style="max-width: 650px;">
+      <button class="btn-close-modal" data-modal="about-modal"><i class="fa-solid fa-xmark"></i></button>
+
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-heading); font-size: 1.8rem; color: #fff;"><i class="fa-solid fa-circle-info"></i> About Project</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Interactive 3D Chemical Laboratory Simulation</p>
+      </div>
+
+      <div style="font-size: 0.92rem; line-height: 1.7; color: #cbd5e1;">
+        <p style="margin-bottom: 1rem;">
+          This interactive 3D laboratory project was designed to visually demonstrate the step-by-step chemical preparation of polymer slime in a virtual laboratory environment.
+        </p>
+        <p style="margin-bottom: 1rem;">
+          Built using <strong>HTML5, CSS3, JavaScript, Three.js, and OrbitControls</strong>, it features real-time WebGL rendering, lathed borosilicate glass beaker geometry, deformable slime mesh with trapped micro-bubbles, CAD inspection view modes, and procedural sound synthesis.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       SCRIPTS & DEPENDENCIES
+       ========================================================================== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <script src="js/audio.js"></script>
+  <script src="js/chemistry.js"></script>
+  <script src="js/labObjects.js"></script>
+  <script src="js/liquid.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
